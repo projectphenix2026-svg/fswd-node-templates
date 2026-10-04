@@ -1,0 +1,86 @@
+{
+  "title": "Close one ticket, delete another",
+  "parts": [
+    {
+      "kind": "apply",
+      "file": "class-06/t2.js",
+      "db": "check_c6_t2",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          }
+        ]
+      },
+      "source": [
+        {
+          "has": "updateOne",
+          "msg": "t2.js does not use updateOne to change ticket 1"
+        },
+        {
+          "has": "deleteOne",
+          "msg": "t2.js does not use deleteOne to remove ticket 2"
+        }
+      ],
+      "after": [
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 1,
+            "status": "closed"
+          },
+          "count": 1,
+          "msg": "ticket 1 is not closed: db.tickets.updateOne({ no: 1 }, { $set: { status: \"closed\" } })"
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down"
+          },
+          "count": 1,
+          "msg": "ticket 1 lost its other fields: change only status, inside $set"
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 2
+          },
+          "count": 0,
+          "msg": "ticket 2 is still there: db.tickets.deleteOne({ no: 2 })"
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 3,
+            "status": "closed"
+          },
+          "count": 1,
+          "msg": "ticket 3 should be left as it was: the filter of deleteOne must name ticket 2"
+        },
+        {
+          "coll": "tickets",
+          "filter": {},
+          "count": 2,
+          "msg": "two tickets should be left, 1 and 3: only ticket 2 is deleted"
+        }
+      ]
+    }
+  ]
+}

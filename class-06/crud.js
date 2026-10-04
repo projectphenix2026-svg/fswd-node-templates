@@ -1,0 +1,8 @@
+db.books.insertOne({ title: "Wings of Fire", author: "A. P. J. Abdul Kalam", copies: 3 })
+db.books.insertMany([{ title: "Ignited Minds", author: "A. P. J. Abdul Kalam", copies: 1 }, { title: "Malgudi Days", author: "R. K. Narayan", copies: 2 }])
+db.books.find()
+db.books.find({ author: "R. K. Narayan" })
+db.books.updateOne({ title: "Ignited Minds" }, { $set: { copies: 4 } })
+db.books.deleteOne({ title: "Malgudi Days" })
+db.books.find()
+db.books.drop()

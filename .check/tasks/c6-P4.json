@@ -1,0 +1,74 @@
+{
+  "title": "Create, update and delete in a shop",
+  "parts": [
+    {
+      "kind": "apply",
+      "file": "class-06/p4.js",
+      "db": "check_c6_p4",
+      "seed": {
+        "products": [
+          {
+            "name": "Pen",
+            "price": 10,
+            "stock": 50
+          },
+          {
+            "name": "Notebook",
+            "price": 60,
+            "stock": 0
+          },
+          {
+            "name": "Marker",
+            "price": 35,
+            "stock": 12
+          }
+        ]
+      },
+      "after": [
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Stapler",
+            "price": 120,
+            "stock": 8
+          },
+          "count": 1,
+          "msg": "the Stapler is not there as asked: name \"Stapler\", price 120, stock 8"
+        },
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Pen",
+            "price": 12,
+            "stock": 50
+          },
+          "count": 1,
+          "msg": "the Pen should now cost 12 and still have stock 50: updateOne({ name: \"Pen\" }, { $set: { price: 12 } })"
+        },
+        {
+          "coll": "products",
+          "filter": {
+            "stock": 0
+          },
+          "count": 0,
+          "msg": "a product with stock 0 is still there: deleteOne({ stock: 0 })"
+        },
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Marker",
+            "price": 35
+          },
+          "count": 1,
+          "msg": "the Marker should be left as it was"
+        },
+        {
+          "coll": "products",
+          "filter": {},
+          "count": 3,
+          "msg": "three products should be left: Pen, Marker and Stapler"
+        }
+      ]
+    }
+  ]
+}

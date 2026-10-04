@@ -1,0 +1,52 @@
+{
+  "title": "Orders of 500 or more",
+  "parts": [
+    {
+      "kind": "result",
+      "file": "class-06/t3.js",
+      "db": "check_c6_t3",
+      "seed": {
+        "orders": [
+          {
+            "no": 1,
+            "item": "Notebook",
+            "amount": 120
+          },
+          {
+            "no": 2,
+            "item": "Headphones",
+            "amount": 1500
+          },
+          {
+            "no": 3,
+            "item": "Backpack",
+            "amount": 900
+          },
+          {
+            "no": 4,
+            "item": "Pen drive",
+            "amount": 500
+          },
+          {
+            "no": 5,
+            "item": "Charger",
+            "amount": 499
+          }
+        ]
+      },
+      "by": "item",
+      "source": [
+        {
+          "has": "db\\.orders\\.find",
+          "msg": "t3.js must ask the collection orders: db.orders.find({ \u2026 })"
+        }
+      ],
+      "expect": [
+        "Headphones",
+        "Backpack",
+        "Pen drive"
+      ],
+      "msg": "500 itself counts, and 499 does not: \"500 or more\" is $gte."
+    }
+  ]
+}

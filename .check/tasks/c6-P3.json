@@ -1,0 +1,51 @@
+{
+  "title": "Marks from 40 to 60",
+  "parts": [
+    {
+      "kind": "result",
+      "file": "class-06/p3.js",
+      "db": "check_c6_p3",
+      "seed": {
+        "students": [
+          {
+            "name": "Asha",
+            "marks": 72
+          },
+          {
+            "name": "Ravi",
+            "marks": 40
+          },
+          {
+            "name": "Meena",
+            "marks": 58
+          },
+          {
+            "name": "Kiran",
+            "marks": 39
+          },
+          {
+            "name": "Farah",
+            "marks": 60
+          },
+          {
+            "name": "Dev",
+            "marks": 61
+          }
+        ]
+      },
+      "by": "name",
+      "source": [
+        {
+          "has": "db\\.students\\.find",
+          "msg": "p3.js must ask the collection students: db.students.find({ \u2026 })"
+        }
+      ],
+      "expect": [
+        "Ravi",
+        "Meena",
+        "Farah"
+      ],
+      "msg": "40 and 60 are both included, 39 and 61 are not: $gte for the lower end and $lte for the upper, in the same inner object."
+    }
+  ]
+}

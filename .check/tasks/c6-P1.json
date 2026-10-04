@@ -1,0 +1,34 @@
+{
+  "title": "A collection, and its first document",
+  "parts": [
+    {
+      "kind": "apply",
+      "file": "class-06/p1.js",
+      "db": "check_c6_p1",
+      "seed": {},
+      "source": [
+        {
+          "has": "createCollection",
+          "msg": "p1.js does not make the collection by name: db.createCollection(\"numbers\")"
+        }
+      ],
+      "after": [
+        {
+          "coll": "numbers",
+          "filter": {
+            "value": 7,
+            "prime": true
+          },
+          "count": 1,
+          "msg": "the collection numbers should hold one document with value 7 and prime true (true is written without quotes)"
+        },
+        {
+          "coll": "numbers",
+          "filter": {},
+          "count": 1,
+          "msg": "numbers should hold exactly one document"
+        }
+      ]
+    }
+  ]
+}

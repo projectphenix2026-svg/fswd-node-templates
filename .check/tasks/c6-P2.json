@@ -1,0 +1,62 @@
+{
+  "title": "Open tickets of block C",
+  "parts": [
+    {
+      "kind": "result",
+      "file": "class-06/p2.js",
+      "db": "check_c6_p2",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          },
+          {
+            "no": 4,
+            "block": "B",
+            "problem": "Tap leaking",
+            "status": "open"
+          },
+          {
+            "no": 5,
+            "block": "C",
+            "problem": "Light not working",
+            "status": "open"
+          },
+          {
+            "no": 6,
+            "block": "C",
+            "problem": "Door lock broken",
+            "status": "closed"
+          }
+        ]
+      },
+      "by": "no",
+      "source": [
+        {
+          "has": "db\\.tickets\\.find",
+          "msg": "p2.js must ask the collection tickets: db.tickets.find({ \u2026 })"
+        }
+      ],
+      "expect": [
+        1,
+        5
+      ],
+      "msg": "Both conditions must hold: block \"C\" and status \"open\", as two fields of one filter."
+    }
+  ]
+}

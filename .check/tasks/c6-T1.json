@@ -1,0 +1,83 @@
+{
+  "title": "Add three tickets",
+  "parts": [
+    {
+      "kind": "apply",
+      "file": "class-06/t1.js",
+      "db": "check_c6_t1",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          }
+        ]
+      },
+      "source": [
+        {
+          "has": "insertOne",
+          "msg": "t1.js does not use insertOne for the single ticket"
+        },
+        {
+          "has": "insertMany",
+          "msg": "t1.js does not use insertMany for the two tickets: one command, with the two documents in square brackets"
+        }
+      ],
+      "after": [
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 4,
+            "block": "B",
+            "problem": "Tap leaking",
+            "status": "open"
+          },
+          "count": 1,
+          "msg": "ticket 4 is not there as asked: no 4, block \"B\", problem \"Tap leaking\", status \"open\" (check the spelling of each field and value)"
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 5,
+            "block": "A",
+            "problem": "Light not working",
+            "status": "open"
+          },
+          "count": 1,
+          "msg": "ticket 5 is not there as asked: no 5, block \"A\", problem \"Light not working\", status \"open\""
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 6,
+            "block": "D",
+            "problem": "Door lock broken",
+            "status": "open"
+          },
+          "count": 1,
+          "msg": "ticket 6 is not there as asked: no 6, block \"D\", problem \"Door lock broken\", status \"open\""
+        },
+        {
+          "coll": "tickets",
+          "filter": {},
+          "count": 6,
+          "msg": "the collection should hold six tickets now: the three that were there and your three. One was added twice, or one is missing"
+        }
+      ]
+    }
+  ]
+}
