@@ -11,7 +11,6 @@
         "chat.commandCenter.enabled": false,
         "chat.disableAIFeatures": true,
         "workbench.secondarySideBar.defaultVisibility": "hidden",
-        "security.workspace.trust.enabled": false,
         "github.copilot.enable": { "*": false },
         "workbench.startupEditor": "readme",
         "terminal.integrated.defaultProfile.linux": "bash"
