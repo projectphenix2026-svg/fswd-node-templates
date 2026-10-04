@@ -1,0 +1,21 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:22
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    network_mode: service:db
+
+  db:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+  cache:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    network_mode: service:db
+
+volumes:
+  mongo-data:
