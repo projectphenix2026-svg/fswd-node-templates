@@ -1,0 +1,61 @@
+{
+  "title": "Who registered from one course?",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/p3.js",
+      "prefix": "chk_c8p3_",
+      "db": "chk_c8p3_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          },
+          {
+            "email": "meera@college.edu",
+            "password": "lamp19",
+            "course": "CSE"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "path": "/courses/CSE",
+          "status": 200,
+          "equals": "[\"asha@college.edu\",\"meera@college.edu\"]",
+          "msg": "/courses/CSE should answer the JSON array of the two CSE emails, and nothing else of each student"
+        },
+        {
+          "path": "/courses/IT",
+          "status": 200,
+          "equals": "[\"ravi@college.edu\"]",
+          "msg": "/courses/IT should answer [\"ravi@college.edu\"]: the course must come from req.params.course"
+        },
+        {
+          "path": "/courses/ECE",
+          "status": 200,
+          "equals": "[]",
+          "msg": "a course nobody registered from should answer an empty array, []"
+        }
+      ],
+      "source": [
+        {
+          "has": "\\.toArray\\(\\)",
+          "msg": "p3.js does not turn what find gives into an array: .toArray()"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ]
+    }
+  ]
+}

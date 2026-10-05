@@ -1,0 +1,24 @@
+{
+  "title": "Keep a value, read it, remove it",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-09/p1.js",
+      "cache": {},
+      "expected": "Lab 3 closed today\nnull",
+      "source": [
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del|incr|quit)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "notice:A",
+          "absent": true,
+          "msg": "the key notice:A should be gone at the end: await cache.del(\"notice:A\")"
+        }
+      ]
+    }
+  ]
+}

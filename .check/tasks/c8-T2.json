@@ -1,0 +1,96 @@
+{
+  "title": "Check the login against the database",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/t2.js",
+      "prefix": "chk_c8t2_",
+      "db": "chk_c8t2_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "tulip42"
+          },
+          "status": 200,
+          "has": [
+            "Welcome back, asha@college.edu"
+          ],
+          "msg": "a right email and password should be answered Welcome back, asha@college.edu"
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "rose11"
+          },
+          "status": 401,
+          "has": [
+            "Wrong email or password"
+          ],
+          "msg": "a wrong password should be answered with the status 401 and the text Wrong email or password",
+          "lacks": [
+            "Welcome"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "form": {
+            "email": "nobody@college.edu",
+            "password": "tulip42"
+          },
+          "status": 401,
+          "has": [
+            "Wrong email or password"
+          ],
+          "msg": "an email that never registered should be answered with the status 401 and the text Wrong email or password",
+          "lacks": [
+            "Welcome"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "form": {
+            "email": "ravi@college.edu",
+            "password": "kite77"
+          },
+          "status": 200,
+          "has": [
+            "Welcome back, ravi@college.edu"
+          ],
+          "msg": "the reply should name the user who was found: \"Welcome back, \" + user.email"
+        }
+      ],
+      "source": [
+        {
+          "has": "findOne\\s*\\(",
+          "msg": "t2.js does not look the user up with findOne"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ]
+    }
+  ]
+}

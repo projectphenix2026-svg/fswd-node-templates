@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log in to the helpdesk</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 420px; margin: 32px auto; padding: 0 16px; }
+  label { display: block; margin: 14px 0 4px; font-weight: 600; }
+  input, select, button { font: inherit; padding: 8px 10px; width: 100%; box-sizing: border-box; }
+  button { margin-top: 18px; background: #3f7d33; color: #fff; border: 0; border-radius: 8px; }
+</style>
+</head>
+<body>
+<h1>Log in to the helpdesk</h1>
+<form method="post" action="/login">
+  <label for="email">College email</label>
+  <input id="email" name="email" type="email">
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password">
+  <button type="submit">Log in</button>
+</form>
+<p><a href="/register.html">New here? Register</a></p>
+</body>
+</html>

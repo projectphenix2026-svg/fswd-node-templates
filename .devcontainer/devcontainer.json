@@ -4,7 +4,7 @@
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "forwardPorts": [3000],
-  "postCreateCommand": "npm install && npm install -g mongosh",
+  "postCreateCommand": "npm install -g mongosh && bash .devcontainer/setup.sh",
   "customizations": {
     "vscode": {
       "settings": {

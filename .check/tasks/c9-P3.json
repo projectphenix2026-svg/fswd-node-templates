@@ -1,0 +1,48 @@
+{
+  "title": "Count the visits",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-09/p3.js",
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/visits",
+          "status": 200,
+          "equals": "Visit number 1",
+          "msg": "the first visit should be answered Visit number 1"
+        },
+        {
+          "path": "/visits",
+          "status": 200,
+          "equals": "Visit number 2",
+          "msg": "the second visit should be answered Visit number 2"
+        },
+        {
+          "path": "/visits",
+          "status": 200,
+          "equals": "Visit number 3",
+          "msg": "the third visit should be answered Visit number 3"
+        }
+      ],
+      "source": [
+        {
+          "has": "cache\\.incr\\s*\\(",
+          "msg": "p3.js does not count with cache.incr(\"visits\")"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del|incr|quit)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "visits",
+          "equals": "3",
+          "msg": "after three visits the key visits should hold 3"
+        }
+      ]
+    }
+  ]
+}

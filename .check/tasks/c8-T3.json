@@ -1,0 +1,78 @@
+{
+  "title": "How many students have registered?",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/t3.js",
+      "prefix": "chk_c8t3_",
+      "db": "chk_c8t3_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "path": "/count",
+          "status": 200,
+          "equals": "Registered students: 2",
+          "msg": "with two students in the collection, /count should answer Registered students: 2"
+        }
+      ],
+      "source": [
+        {
+          "has": "countDocuments\\s*\\(",
+          "msg": "t3.js does not count with countDocuments"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ]
+    },
+    {
+      "kind": "serve",
+      "file": "class-08/t3.js",
+      "prefix": "chk_c8t3_",
+      "db": "chk_c8t3_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          },
+          {
+            "email": "meera@college.edu",
+            "password": "lamp19",
+            "course": "CSE"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "path": "/count",
+          "status": 200,
+          "equals": "Registered students: 3",
+          "msg": "with three students in the collection, /count should answer Registered students: 3: the number must come from the database"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "title": "Refuse a form with an empty box",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/p1.js",
+      "prefix": "chk_c8p1_",
+      "db": "chk_c8p1_helpdesk",
+      "seed": {
+        "users": []
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "",
+            "course": "CSE"
+          },
+          "status": 400,
+          "has": [
+            "Fill in every box"
+          ],
+          "msg": "a form with an empty password should be refused with the status 400 and the text Fill in every box"
+        },
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": ""
+          },
+          "status": 400,
+          "has": [
+            "Fill in every box"
+          ],
+          "msg": "a form with no course chosen should be refused with the status 400 and the text Fill in every box"
+        },
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          "status": 400,
+          "has": [
+            "Fill in every box"
+          ],
+          "msg": "a form with an empty email should be refused with the status 400 and the text Fill in every box"
+        },
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          "status": 201,
+          "has": [
+            "Registered: you can log in now"
+          ],
+          "msg": "a form with every box filled should be answered 201 Registered: you can log in now"
+        }
+      ],
+      "source": [
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ],
+      "after": [
+        {
+          "coll": "users",
+          "filter": {},
+          "count": 1,
+          "msg": "a refused form was stored all the same: return after sending the 400, so that insertOne below does not run"
+        },
+        {
+          "coll": "users",
+          "filter": {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          "count": 1,
+          "msg": "the good form is not in helpdesk.users with its email, password and course"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "title": "Nobody registers twice",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/p2.js",
+      "prefix": "chk_c8p2_",
+      "db": "chk_c8p2_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "other99",
+            "course": "IT"
+          },
+          "status": 409,
+          "has": [
+            "Already registered"
+          ],
+          "msg": "an email that is in the collection already should be refused with the status 409 and the text Already registered"
+        },
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          },
+          "status": 201,
+          "has": [
+            "Registered: you can log in now"
+          ],
+          "msg": "a new email should be answered 201 Registered: you can log in now"
+        }
+      ],
+      "source": [
+        {
+          "has": "findOne\\s*\\(",
+          "msg": "p2.js does not look for the email first with findOne"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ],
+      "after": [
+        {
+          "coll": "users",
+          "filter": {
+            "email": "asha@college.edu"
+          },
+          "count": 1,
+          "msg": "the email that was refused was stored a second time: return after sending the 409"
+        },
+        {
+          "coll": "users",
+          "filter": {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          },
+          "count": 1,
+          "msg": "the new student is not in helpdesk.users"
+        }
+      ]
+    }
+  ]
+}

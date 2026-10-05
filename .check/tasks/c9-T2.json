@@ -1,0 +1,100 @@
+{
+  "title": "Ask the cache first",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-09/t2.js",
+      "prefix": "chk_c9_",
+      "db": "chk_c9_helpdesk",
+      "seed": {
+        "reports": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          },
+          {
+            "no": 4,
+            "block": "C",
+            "problem": "Tap leaking",
+            "status": "open"
+          },
+          {
+            "no": 5,
+            "block": "B",
+            "problem": "Light flickering",
+            "status": "closed"
+          },
+          {
+            "no": 6,
+            "block": "A",
+            "problem": "Door jammed",
+            "status": "closed"
+          }
+        ]
+      },
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/open/C",
+          "status": 200,
+          "equals": "{\"block\":\"C\",\"open\":2,\"source\":\"database\"}",
+          "msg": "the first request for Block C should be answered from the database: {\"block\":\"C\",\"open\":2,\"source\":\"database\"}"
+        },
+        {
+          "path": "/open/C",
+          "status": 200,
+          "equals": "{\"block\":\"C\",\"open\":2,\"source\":\"cache\"}",
+          "msg": "the second request for Block C should be answered from the cache: {\"block\":\"C\",\"open\":2,\"source\":\"cache\"} (open is a number: Number(kept))"
+        },
+        {
+          "path": "/open/A",
+          "status": 200,
+          "equals": "{\"block\":\"A\",\"open\":1,\"source\":\"database\"}",
+          "msg": "Block A has not been asked for yet, so its first answer comes from the database: each block has a key of its own"
+        }
+      ],
+      "source": [
+        {
+          "has": "cache\\.get\\s*\\(",
+          "msg": "t2.js does not ask the cache first: const kept = await cache.get(key);"
+        },
+        {
+          "has": "cache\\.set\\s*\\(",
+          "msg": "t2.js does not keep the number in the cache: await cache.set(key, n, \"EX\", 30);"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del|incr|quit)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "open:C",
+          "equals": "2",
+          "msg": "after the first request the cache should hold the key open:C with the value 2"
+        },
+        {
+          "key": "open:C",
+          "ttlMin": 1,
+          "ttlMax": 30,
+          "msg": "the key open:C should expire after 30 seconds: cache.set(key, n, \"EX\", 30)"
+        }
+      ]
+    }
+  ]
+}

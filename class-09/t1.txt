@@ -1,0 +1,10 @@
+Task 1 is typed in valkey-cli, not in a file.
+
+In the terminal:   valkey-cli
+At its prompt, keep the notice for Block C for 300 seconds:
+
+    the key      notice:C
+    the value    "Wi-Fi down"
+    it expires   after 300 seconds
+
+Then ask for it with GET, ask how long it has left with TTL, and leave with  exit

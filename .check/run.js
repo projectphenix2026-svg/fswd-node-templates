@@ -4,8 +4,19 @@
 // way you would, and compares what came back, or what the database then holds, with what the task asks for.
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const http = require('http');
+const { spawn, spawnSync } = require('child_process');
 const { MongoClient } = require('mongodb');
+
+// Valkey, for the tasks that use the cache (Class 9 on). A program is checked on database number 15 of the Valkey
+// server, which the check empties first; your own keys, in database 0, are never touched.
+const CACHE_DB = 15;
+function valkey(db)
+{
+  const Valkey = require('iovalkey');
+  return new Valkey({ db: db, lazyConnect: true, maxRetriesPerRequest: 1, retryStrategy: () => null });
+}
+const NO_CACHE = 'Valkey does not answer. Run  npm run setup  once, then try again.';
 
 const URL = (process.env.MONGO_URL || 'mongodb://localhost:27017').replace(/\/+$/, '');
 const ROOT = path.join(__dirname, '..');
@@ -53,6 +64,54 @@ function sourceChecks(text, list)
     if (c.lacks && new RegExp(c.lacks).test(text)) { say(c.msg); fine = false; }
   });
   return fine;
+}
+
+// the check's own cache: emptied, then given what the task starts from
+async function cacheSeed(part)
+{
+  if (!part.cache) return true;
+  let c = null;
+  try
+  {
+    c = valkey(CACHE_DB);
+    await c.connect();
+    await c.flushdb();
+    for (const k of Object.keys(part.cache))
+    {
+      const v = part.cache[k];
+      if (Array.isArray(v)) await c.set(k, String(v[0]), 'EX', v[1]);
+      else await c.set(k, String(v));
+    }
+  }
+  catch (e) { say(NO_CACHE); return false; }
+  finally { if (c) c.disconnect(); }
+  return true;
+}
+
+// what Valkey holds afterwards
+async function cacheChecks(db, list)
+{
+  if (!list || !list.length) return;
+  let c = null;
+  try
+  {
+    c = valkey(db);
+    await c.connect();
+    for (const k of list)
+    {
+      const v = await c.get(k.key);
+      const ttl = await c.ttl(k.key);
+      let fine = true;
+      if (k.absent && v !== null) fine = false;
+      if (k.equals != null && v !== String(k.equals)) fine = false;
+      if (k.ttlMin != null && !(ttl >= k.ttlMin)) fine = false;
+      if (k.ttlMax != null && !(ttl >= 0 && ttl <= k.ttlMax)) fine = false;
+      if (!fine) { say(k.msg); break; }
+      if (k.ok) ok(k.ok);
+    }
+  }
+  catch (e) { say(NO_CACHE); }
+  finally { if (c) c.disconnect(); }
 }
 
 // mongosh, as typed in the terminal: quiet, on the check's own database
@@ -165,11 +224,12 @@ async function run(client, part)
   const text = fs.readFileSync(path.join(ROOT, part.file), 'utf8').replace(/\/\/.*$/gm, '');
   if (!sourceChecks(text, part.source)) return;
   if (part.seed) await seed(client, part.db, part.seed);
+  if (!(await cacheSeed(part))) return;
   // the program names its database itself, as the examination asks: client.db("helpdesk"). The preload gives every
   // database name the check's own prefix, so the check never touches the database the student practises in.
-  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db || '', CHECK_DB_PREFIX: part.prefix || '' });
+  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db || '', CHECK_DB_PREFIX: part.prefix || '', CHECK_CACHE_DB: part.cache ? String(CACHE_DB) : '' });
   const cmd = 'node ' + [part.file].concat(part.args || []).join(' ');
-  const pre = part.prefix ? ['-r', path.join(__dirname, 'preload.js')] : [];
+  const pre = part.prefix || part.cache ? ['-r', path.join(__dirname, 'preload.js')] : [];
   const out = spawnSync('node', pre.concat([part.file]).concat(part.args || []), { cwd: ROOT, encoding: 'utf8', timeout: part.wait || 20000, env: env });
   if (out.status !== 0)
   {
@@ -189,6 +249,97 @@ async function run(client, part)
   if (extra != null) { say(part.msg || (cmd + ' should not print ' + JSON.stringify(extra))); return; }
   ok(cmd);
   await after(client, part.db, part.after);
+  await cacheChecks(CACHE_DB, part.cacheAfter);
+}
+
+// one real request to the program's server, and what came back
+function ask(port, r)
+{
+  return new Promise(resolve =>
+  {
+    let body = null;
+    const headers = {};
+    if (r.form) { body = Object.keys(r.form).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(r.form[k])).join('&'); headers['Content-Type'] = 'application/x-www-form-urlencoded'; }
+    if (r.send) { body = JSON.stringify(r.send); headers['Content-Type'] = 'application/json'; }
+    if (body != null) headers['Content-Length'] = Buffer.byteLength(body);
+    const req = http.request({ host: '127.0.0.1', port: port, path: r.path, method: r.method || 'GET', headers: headers, timeout: 8000 }, res =>
+    {
+      let text = '';
+      res.setEncoding('utf8');
+      res.on('data', d => { text += d; });
+      res.on('end', () => resolve({ status: res.statusCode, text: text }));
+    });
+    req.on('timeout', () => { req.destroy(); resolve({ status: 0, text: '', none: 'gave no answer in 8 seconds: every path through the route must end with res.send, res.json or res.status(…).send' }); });
+    req.on('error', e => resolve({ status: 0, text: '', none: 'could not be asked (' + e.code + ')' }));
+    if (body != null) req.write(body);
+    req.end();
+  });
+}
+
+// a server: started as you would start it, asked real requests, and its answers compared
+async function serve(client, part)
+{
+  if (!fs.existsSync(path.join(ROOT, part.file))) { say('the file ' + part.file + ' is missing'); return; }
+  const text = fs.readFileSync(path.join(ROOT, part.file), 'utf8').replace(/\/\/.*$/gm, '');
+  if (!sourceChecks(text, part.source)) return;
+  if (part.seed) await seed(client, part.db, part.seed);
+  if (!(await cacheSeed(part))) return;
+  // the check's own door number and database: the student's own server on 3000 and their own data are left alone
+  const port = 3900 + Math.floor(Math.random() * 90);
+  const env = Object.assign({}, process.env, { MONGO_URL: URL, CHECK_DB_PREFIX: part.prefix || '', CHECK_PORT: String(port), CHECK_CACHE_DB: part.cache ? String(CACHE_DB) : '' }, part.env || {});
+  const child = spawn('node', ['-r', path.join(__dirname, 'preload.js'), part.file], { cwd: ROOT, env: env });
+  let err = '';
+  let printed = '';
+  let ended = false;
+  child.stderr.on('data', d => { err += d; });
+  child.stdout.on('data', d => { printed += d; });
+  child.on('exit', () => { ended = true; });
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  let up = false;
+  for (let i = 0; i < 60 && !ended && !up; i++)
+  {
+    await wait(250);
+    const r = await ask(port, { path: part.ready || '/' });
+    up = !r.none;
+  }
+  try
+  {
+    if (!up)
+    {
+      const line = tidy(err).split('\n').filter(l => /Error/.test(l))[0];
+      say('node ' + part.file + (ended ? ' stopped' + (line ? ' with an error: ' + line : ' before it listened: the server must connect and then call app.listen(3000)') : ' did not start listening: after the connect, call app.listen(3000)'));
+      return;
+    }
+    const before = wrong;
+    for (const r of part.requests || [])
+    {
+      const got = await ask(port, r);
+      const what = (r.method || 'GET') + ' ' + r.path + (r.form ? ' with ' + Object.keys(r.form).map(k => k + '=' + (r.form[k] === '' ? '(empty)' : r.form[k])).join(', ') : '');
+      const body = tidy(got.text);
+      let fine = !got.none;
+      if (fine && r.status != null && got.status !== r.status) fine = false;
+      if (fine && (r.has || []).some(t => body.indexOf(t) < 0)) fine = false;
+      if (fine && (r.lacks || []).some(t => body.indexOf(t) >= 0)) fine = false;
+      if (fine && r.equals != null && body !== tidy(r.equals)) fine = false;
+      if (!fine)
+      {
+        say(r.msg + ' (' + what + (got.none ? ' ' + got.none : ' answered ' + got.status + ' ' + JSON.stringify(body.slice(0, 90))) + ')');
+        break;
+      }
+      ok(what + ' answered ' + got.status + ' ' + JSON.stringify(body.slice(0, 60)));
+    }
+    if (wrong === before)
+    {
+      const miss = (part.prints || []).filter(t => tidy(printed).indexOf(tidy(t)) < 0)[0];
+      if (miss != null) say(part.printsMsg || ('the server did not print ' + JSON.stringify(miss)));
+    }
+    if (wrong === before) await after(client, part.db, part.after);
+    if (wrong === before) await cacheChecks(CACHE_DB, part.cacheAfter);
+  }
+  finally
+  {
+    child.kill();
+  }
 }
 
 (async () =>
@@ -203,6 +354,14 @@ async function run(client, part)
       if (part.kind === 'result') await result(client, part);
       else if (part.kind === 'apply') await apply(client, part);
       else if (part.kind === 'run') await run(client, part);
+      else if (part.kind === 'serve') await serve(client, part);
+      else if (part.kind === 'cache')
+      {
+        // a key typed in valkey-cli: only read, in the database you typed it in
+        const before = wrong;
+        await cacheChecks(part.db || 0, part.checks);
+        if (wrong === before) ok('Valkey holds the key as the task asks');
+      }
     }
   }
   finally

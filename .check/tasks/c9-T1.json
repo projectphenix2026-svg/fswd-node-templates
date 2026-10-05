@@ -1,0 +1,22 @@
+{
+  "title": "A key with an expiry, typed in valkey-cli",
+  "parts": [
+    {
+      "kind": "cache",
+      "db": 0,
+      "checks": [
+        {
+          "key": "notice:C",
+          "equals": "Wi-Fi down",
+          "msg": "the key notice:C does not hold the text Wi-Fi down: SET notice:C \"Wi-Fi down\" EX 300 (if you typed it more than 300 seconds ago it has expired: type it again)"
+        },
+        {
+          "key": "notice:C",
+          "ttlMin": 1,
+          "ttlMax": 300,
+          "msg": "the key notice:C has no expiry of at most 300 seconds: end the SET with EX 300"
+        }
+      ]
+    }
+  ]
+}

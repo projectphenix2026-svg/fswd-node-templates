@@ -1,12 +1,13 @@
 # Full Stack Web Development · your Codespace
 
-This Codespace is a computer in the cloud with three things ready:
+This Codespace is a computer in the cloud with these things ready:
 
 | | |
 |---|---|
 | **Node.js** | runs your programs, as in the earlier classes |
 | **MongoDB** | a real database server, on this Codespace only |
 | **mongosh** | the MongoDB shell: type `mongosh` in the terminal |
+| **Valkey** | a real cache server, on this Codespace only; its shell is `valkey-cli` |
 
 ## First, once
 
@@ -19,6 +20,15 @@ npm run hello
 ```
 
 It prints `MongoDB answers: this Codespace is ready`.
+
+## When a class's folder is not here
+
+A Codespace made for an earlier class does not have the later folders yet. Fetch them, once:
+
+```
+git pull
+npm run setup
+```
 
 ## In a class
 

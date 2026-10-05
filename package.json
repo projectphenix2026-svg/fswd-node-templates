@@ -5,9 +5,12 @@
   "description": "Full Stack Web Development: Node programs with a real MongoDB, in a Codespace",
   "scripts": {
     "hello": "node hello.js",
+    "setup": "bash .devcontainer/setup.sh",
     "check": "node .check/run.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
+    "iovalkey": "^0.4.0",
     "mongodb": "^6.12.0"
   }
 }

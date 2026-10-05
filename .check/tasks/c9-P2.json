@@ -1,0 +1,30 @@
+{
+  "title": "A one-time password that expires",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-09/p2.js",
+      "cache": {},
+      "expected": "4821",
+      "source": [
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del|incr|quit)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "otp:asha",
+          "equals": "4821",
+          "msg": "the key otp:asha should hold 4821"
+        },
+        {
+          "key": "otp:asha",
+          "ttlMin": 1,
+          "ttlMax": 120,
+          "msg": "the key otp:asha should expire after 120 seconds: cache.set(\"otp:asha\", \"4821\", \"EX\", 120)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "title": "Store what the form sent",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-08/t1.js",
+      "prefix": "chk_c8t1_",
+      "db": "chk_c8t1_helpdesk",
+      "seed": {
+        "users": [
+          {
+            "email": "ravi@college.edu",
+            "password": "kite77",
+            "course": "IT"
+          }
+        ]
+      },
+      "ready": "/login.html",
+      "requests": [
+        {
+          "method": "POST",
+          "path": "/register",
+          "form": {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          "status": 201,
+          "has": [
+            "Registered: you can log in now"
+          ],
+          "msg": "the form was sent, and the reply should be the status 201 with the text Registered: you can log in now"
+        }
+      ],
+      "source": [
+        {
+          "has": "insertOne\\s*\\(",
+          "msg": "t1.js does not store the form: await users.insertOne({ \u2026 })"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|countDocuments|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ],
+      "after": [
+        {
+          "coll": "users",
+          "filter": {
+            "email": "asha@college.edu",
+            "password": "tulip42",
+            "course": "CSE"
+          },
+          "count": 1,
+          "msg": "the student is not in helpdesk.users as the form sent her: the fields are email, password and course, each from req.body"
+        },
+        {
+          "coll": "users",
+          "filter": {},
+          "count": 2,
+          "msg": "the collection should hold two students: the one who was there and the one the form sent, stored once"
+        }
+      ]
+    }
+  ]
+}

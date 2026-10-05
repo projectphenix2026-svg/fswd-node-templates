@@ -1,0 +1,109 @@
+{
+  "title": "Keep a whole document in the cache",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "class-09/p4.js",
+      "prefix": "chk_c9_",
+      "db": "chk_c9_helpdesk",
+      "seed": {
+        "reports": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          },
+          {
+            "no": 4,
+            "block": "C",
+            "problem": "Tap leaking",
+            "status": "open"
+          },
+          {
+            "no": 5,
+            "block": "B",
+            "problem": "Light flickering",
+            "status": "closed"
+          },
+          {
+            "no": 6,
+            "block": "A",
+            "problem": "Door jammed",
+            "status": "closed"
+          }
+        ]
+      },
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/reports/4",
+          "status": 200,
+          "has": [
+            "\"source\":\"database\"",
+            "\"problem\":\"Tap leaking\"",
+            "\"block\":\"C\""
+          ],
+          "msg": "the first request for report 4 should come from the database, with the report in it"
+        },
+        {
+          "path": "/reports/4",
+          "status": 200,
+          "has": [
+            "\"source\":\"cache\"",
+            "\"problem\":\"Tap leaking\"",
+            "\"block\":\"C\""
+          ],
+          "msg": "the second request for report 4 should come from the cache, with the same report as an object: JSON.parse(kept)",
+          "lacks": [
+            "\\\"problem\\\""
+          ]
+        },
+        {
+          "path": "/reports/2",
+          "status": 200,
+          "has": [
+            "\"source\":\"database\"",
+            "\"problem\":\"Fan not working\""
+          ],
+          "msg": "report 2 has not been asked for yet: its first answer comes from the database"
+        }
+      ],
+      "source": [
+        {
+          "has": "JSON\\.stringify\\s*\\(",
+          "msg": "p4.js does not turn the document into text before keeping it: JSON.stringify(doc)"
+        },
+        {
+          "has": "JSON\\.parse\\s*\\(",
+          "msg": "p4.js does not turn the kept text back into an object: JSON.parse(kept)"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del|incr|quit)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "report:4",
+          "ttlMin": 1,
+          "ttlMax": 60,
+          "msg": "the key report:4 should be in the cache with an expiry of 60 seconds"
+        }
+      ]
+    }
+  ]
+}
