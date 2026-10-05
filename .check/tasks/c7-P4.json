@@ -1,0 +1,40 @@
+{
+  "title": "The connection is always closed",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/p4.js",
+      "prefix": "chk_c7p4_",
+      "db": "chk_c7p4_helpdesk",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          }
+        ]
+      },
+      "expected": "3 tickets",
+      "source": [
+        {
+          "has": "try\\s*\\{[\\s\\S]*catch\\s*\\([\\s\\S]*finally\\s*\\{[\\s\\S]*client\\.close\\(\\)",
+          "msg": "p4.js must close the connection inside finally, after a try and a catch"
+        }
+      ]
+    }
+  ]
+}

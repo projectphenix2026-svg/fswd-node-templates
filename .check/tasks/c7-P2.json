@@ -1,0 +1,41 @@
+{
+  "title": "A shop: product name and quantity",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/p2.js",
+      "prefix": "chk_c7p2_",
+      "db": "chk_c7p2_shop",
+      "seed": {
+        "products": [
+          {
+            "name": "Pen",
+            "quantity": 50
+          },
+          {
+            "name": "Notebook",
+            "quantity": 20
+          }
+        ]
+      },
+      "expected": "Pen: 50\nNotebook: 20\nMarker: 35",
+      "source": [
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|updateOne|deleteOne|toArray|createCollection)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before it has finished"
+        }
+      ],
+      "after": [
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Marker",
+            "quantity": 35
+          },
+          "count": 1,
+          "msg": "the Marker is not in shop.products as asked: name \"Marker\", quantity 35"
+        }
+      ]
+    }
+  ]
+}

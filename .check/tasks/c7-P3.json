@@ -1,0 +1,40 @@
+{
+  "title": "A collection made by name, in \"prime\"",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/p3.js",
+      "prefix": "chk_c7p3_",
+      "db": "chk_c7p3_prime",
+      "seed": {},
+      "expected": "Collection created, document added",
+      "source": [
+        {
+          "has": "createCollection\\s*\\(\\s*[\"']numbers[\"']",
+          "msg": "p3.js does not make the collection by name: await db.createCollection(\"numbers\")"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|updateOne|deleteOne|toArray|createCollection)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before it has finished"
+        }
+      ],
+      "after": [
+        {
+          "coll": "numbers",
+          "filter": {
+            "value": 7,
+            "prime": true
+          },
+          "count": 1,
+          "msg": "prime.numbers should hold one document with value 7 and prime true (true has no quotes)"
+        },
+        {
+          "coll": "numbers",
+          "filter": {},
+          "count": 1,
+          "msg": "numbers should hold exactly one document"
+        }
+      ]
+    }
+  ]
+}

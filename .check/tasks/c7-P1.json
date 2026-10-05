@@ -1,0 +1,75 @@
+{
+  "title": "Change one ticket, remove another",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/p1.js",
+      "prefix": "chk_c7p1_",
+      "db": "chk_c7p1_helpdesk",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          }
+        ]
+      },
+      "expected": "2 left",
+      "source": [
+        {
+          "has": "updateOne\\s*\\(",
+          "msg": "p1.js does not change ticket 1 with updateOne"
+        },
+        {
+          "has": "deleteOne\\s*\\(",
+          "msg": "p1.js does not remove ticket 2 with deleteOne"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|updateOne|deleteOne|toArray|createCollection)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before it has finished"
+        }
+      ],
+      "after": [
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 1,
+            "status": "closed",
+            "block": "C",
+            "problem": "Wi-Fi down"
+          },
+          "count": 1,
+          "msg": "ticket 1 should be closed and keep its other fields: updateOne({ no: 1 }, { $set: { status: \"closed\" } })"
+        },
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 2
+          },
+          "count": 0,
+          "msg": "ticket 2 is still there: deleteOne({ no: 2 })"
+        },
+        {
+          "coll": "tickets",
+          "filter": {},
+          "count": 2,
+          "msg": "two tickets should be left, 1 and 3"
+        }
+      ]
+    }
+  ]
+}

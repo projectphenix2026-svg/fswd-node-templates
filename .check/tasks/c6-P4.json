@@ -24,6 +24,20 @@
           }
         ]
       },
+      "source": [
+        {
+          "has": "insertOne",
+          "msg": "p4.js does not add the Stapler with insertOne"
+        },
+        {
+          "has": "updateOne",
+          "msg": "p4.js does not change the Pen with updateOne"
+        },
+        {
+          "has": "deleteOne",
+          "msg": "p4.js does not remove the product with deleteOne"
+        }
+      ],
       "after": [
         {
           "coll": "products",

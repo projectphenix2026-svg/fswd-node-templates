@@ -165,9 +165,12 @@ async function run(client, part)
   const text = fs.readFileSync(path.join(ROOT, part.file), 'utf8').replace(/\/\/.*$/gm, '');
   if (!sourceChecks(text, part.source)) return;
   if (part.seed) await seed(client, part.db, part.seed);
-  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db });
+  // the program names its database itself, as the examination asks: client.db("helpdesk"). The preload gives every
+  // database name the check's own prefix, so the check never touches the database the student practises in.
+  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db || '', CHECK_DB_PREFIX: part.prefix || '' });
   const cmd = 'node ' + [part.file].concat(part.args || []).join(' ');
-  const out = spawnSync('node', [part.file].concat(part.args || []), { cwd: ROOT, encoding: 'utf8', timeout: part.wait || 20000, env: env });
+  const pre = part.prefix ? ['-r', path.join(__dirname, 'preload.js')] : [];
+  const out = spawnSync('node', pre.concat([part.file]).concat(part.args || []), { cwd: ROOT, encoding: 'utf8', timeout: part.wait || 20000, env: env });
   if (out.status !== 0)
   {
     const line = tidy(out.stderr).split('\n').filter(l => /Error/.test(l))[0] || (out.status == null ? 'it did not end: close the connection with client.close()' : 'it did not finish');

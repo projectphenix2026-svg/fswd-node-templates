@@ -1,0 +1,50 @@
+{
+  "title": "Read the open tickets",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/t3.js",
+      "prefix": "chk_c7t3_",
+      "db": "chk_c7t3_helpdesk",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          },
+          {
+            "no": 4,
+            "block": "B",
+            "problem": "Tap leaking",
+            "status": "open"
+          }
+        ]
+      },
+      "expected": "3 open\n1 Wi-Fi down\n2 Fan not working\n4 Tap leaking",
+      "source": [
+        {
+          "has": "\\.toArray\\(\\)",
+          "msg": "t3.js does not turn what find gives into an array: await tickets.find({ status: \"open\" }).toArray()"
+        },
+        {
+          "has": "await\\s+tickets\\s*\\.find|await\\s+[\\w.]+\\.find\\(",
+          "msg": "the read is not waited for: const open = await tickets.find({ \u2026 }).toArray();"
+        }
+      ]
+    }
+  ]
+}

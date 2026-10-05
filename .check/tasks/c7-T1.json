@@ -1,0 +1,31 @@
+{
+  "title": "Read a file with a promise",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/t1.js",
+      "args": [
+        "class-07/notes.txt"
+      ],
+      "expected": "Helpdesk opens at 9",
+      "source": [
+        {
+          "has": "await\\s+fs\\.readFile",
+          "msg": "t1.js does not wait for the read: const text = await fs.readFile(process.argv[2], \"utf8\");"
+        },
+        {
+          "has": "try\\s*\\{[\\s\\S]*catch\\s*\\(",
+          "msg": "t1.js has no try and catch round the read: a file that is missing must not stop the program"
+        }
+      ]
+    },
+    {
+      "kind": "run",
+      "file": "class-07/t1.js",
+      "args": [
+        "class-07/no-such-file.txt"
+      ],
+      "expected": "Could not read the file"
+    }
+  ]
+}

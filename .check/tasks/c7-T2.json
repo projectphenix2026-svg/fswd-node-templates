@@ -1,0 +1,63 @@
+{
+  "title": "The program saves a ticket",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "class-07/t2.js",
+      "prefix": "chk_c7t2_",
+      "db": "chk_c7t2_helpdesk",
+      "seed": {
+        "tickets": [
+          {
+            "no": 1,
+            "block": "C",
+            "problem": "Wi-Fi down",
+            "status": "open"
+          },
+          {
+            "no": 2,
+            "block": "A",
+            "problem": "Fan not working",
+            "status": "open"
+          },
+          {
+            "no": 3,
+            "block": "C",
+            "problem": "Projector not working",
+            "status": "closed"
+          }
+        ]
+      },
+      "expected": "Ticket saved",
+      "source": [
+        {
+          "has": "insertOne\\s*\\(",
+          "msg": "t2.js does not add the ticket with insertOne"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|updateOne|deleteOne|toArray|createCollection)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before it has finished"
+        }
+      ],
+      "after": [
+        {
+          "coll": "tickets",
+          "filter": {
+            "no": 4,
+            "block": "B",
+            "problem": "Tap leaking",
+            "status": "open"
+          },
+          "count": 1,
+          "msg": "ticket 4 is not in helpdesk.tickets as asked: no 4, block \"B\", problem \"Tap leaking\", status \"open\" (check the database name, the collection name and the spelling)"
+        },
+        {
+          "coll": "tickets",
+          "filter": {},
+          "count": 4,
+          "msg": "the collection should hold four tickets: the three that were there and yours, added once"
+        }
+      ]
+    }
+  ]
+}
