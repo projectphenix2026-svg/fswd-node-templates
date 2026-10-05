@@ -233,7 +233,7 @@ async function run(client, part)
   const out = spawnSync('node', pre.concat([part.file]).concat(part.args || []), { cwd: ROOT, encoding: 'utf8', timeout: part.wait || 20000, env: env });
   if (out.status !== 0)
   {
-    const line = tidy(out.stderr).split('\n').filter(l => /Error/.test(l))[0] || (out.status == null ? 'it did not end: close the connection with client.close()' : 'it did not finish');
+    const line = tidy(out.stderr).split('\n').filter(l => /Error/.test(l))[0] || (out.status == null ? (part.cache && !part.seed ? 'it did not end: close the line to the cache with await cache.quit()' : 'it did not end: close the connection with client.close()') : 'it did not finish');
     say(cmd + ' stopped with an error: ' + line);
     return;
   }
