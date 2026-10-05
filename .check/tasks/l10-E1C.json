@@ -1,0 +1,49 @@
+{
+  "title": "Exercise 1 \u00b7 Step C \u00b7 the students' three questions",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "includes": [
+        "Loaded 10 items",
+        "Held more than 7 days: Calculator, Power bank, Water bottle, Umbrella",
+        "Electronics: Calculator, Earphones, Power bank",
+        "Claimed: ID card holder, Notebook"
+      ],
+      "source": [
+        {
+          "has": "\\$gt",
+          "msg": "register.js does not use the operator $gt for \"held more than 7 days\": { daysHeld: { $gt: 7 } }"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bitems\\.(insertOne|insertMany|findOne|updateOne|countDocuments|drop)\\(",
+          "msg": "a call to the database is not waited for: write await in front of it"
+        }
+      ]
+    },
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "args": [
+        "Charger",
+        "Electronics",
+        "Lab 2"
+      ],
+      "includes": [
+        "Added Charger",
+        "Electronics: Calculator, Earphones, Power bank, Charger"
+      ],
+      "msg": "after  node lab-10/register.js Charger Electronics \"Lab 2\"  the Electronics line should end with Charger: each line must come from a find, not be typed in"
+    }
+  ]
+}

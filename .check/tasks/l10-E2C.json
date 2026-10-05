@@ -1,0 +1,225 @@
+{
+  "title": "Exercise 2 \u00b7 Step C \u00b7 the expiry from outside",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "lab-10/server.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": [
+          {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": false
+          },
+          {
+            "name": "Earphones",
+            "category": "Electronics",
+            "foundAt": "Auditorium",
+            "daysHeld": 3,
+            "claimed": false
+          },
+          {
+            "name": "Power bank",
+            "category": "Electronics",
+            "foundAt": "Bus stop",
+            "daysHeld": 9,
+            "claimed": false
+          },
+          {
+            "name": "ID card holder",
+            "category": "Cards",
+            "foundAt": "Main gate",
+            "daysHeld": 1,
+            "claimed": true
+          },
+          {
+            "name": "Water bottle",
+            "category": "Bottles",
+            "foundAt": "Ground",
+            "daysHeld": 15,
+            "claimed": false
+          },
+          {
+            "name": "Umbrella",
+            "category": "Other",
+            "foundAt": "Block C",
+            "daysHeld": 20,
+            "claimed": false
+          },
+          {
+            "name": "Notebook",
+            "category": "Books",
+            "foundAt": "Seminar hall",
+            "daysHeld": 2,
+            "claimed": true
+          },
+          {
+            "name": "Hoodie",
+            "category": "Clothing",
+            "foundAt": "Hostel mess",
+            "daysHeld": 6,
+            "claimed": false
+          },
+          {
+            "name": "DBMS textbook",
+            "category": "Books",
+            "foundAt": "Library",
+            "daysHeld": 5,
+            "claimed": false
+          },
+          {
+            "name": "Steel bottle",
+            "category": "Bottles",
+            "foundAt": "Lab 3",
+            "daysHeld": 0,
+            "claimed": false
+          }
+        ]
+      },
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}",
+          "msg": "GET /items/Calculator should answer the four fields from the database: {\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"cache\"}",
+          "msg": "the next GET /items/Calculator should answer the same four fields from the cache, with \"source\":\"cache\""
+        },
+        {
+          "wait": 3500
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "has": [
+            "\"source\":\"database\""
+          ],
+          "msg": "started with CACHE_SECONDS=2, a request made 3 seconds after the note was written should come from the database again: the expiry must be the number from process.env.CACHE_SECONDS"
+        }
+      ],
+      "env": {
+        "CACHE_SECONDS": "2"
+      },
+      "source": [
+        {
+          "has": "process\\.env\\.CACHE_SECONDS",
+          "msg": "server.js does not read the expiry from process.env.CACHE_SECONDS"
+        }
+      ]
+    },
+    {
+      "kind": "serve",
+      "file": "lab-10/server.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": [
+          {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": false
+          },
+          {
+            "name": "Earphones",
+            "category": "Electronics",
+            "foundAt": "Auditorium",
+            "daysHeld": 3,
+            "claimed": false
+          },
+          {
+            "name": "Power bank",
+            "category": "Electronics",
+            "foundAt": "Bus stop",
+            "daysHeld": 9,
+            "claimed": false
+          },
+          {
+            "name": "ID card holder",
+            "category": "Cards",
+            "foundAt": "Main gate",
+            "daysHeld": 1,
+            "claimed": true
+          },
+          {
+            "name": "Water bottle",
+            "category": "Bottles",
+            "foundAt": "Ground",
+            "daysHeld": 15,
+            "claimed": false
+          },
+          {
+            "name": "Umbrella",
+            "category": "Other",
+            "foundAt": "Block C",
+            "daysHeld": 20,
+            "claimed": false
+          },
+          {
+            "name": "Notebook",
+            "category": "Books",
+            "foundAt": "Seminar hall",
+            "daysHeld": 2,
+            "claimed": true
+          },
+          {
+            "name": "Hoodie",
+            "category": "Clothing",
+            "foundAt": "Hostel mess",
+            "daysHeld": 6,
+            "claimed": false
+          },
+          {
+            "name": "DBMS textbook",
+            "category": "Books",
+            "foundAt": "Library",
+            "daysHeld": 5,
+            "claimed": false
+          },
+          {
+            "name": "Steel bottle",
+            "category": "Bottles",
+            "foundAt": "Lab 3",
+            "daysHeld": 0,
+            "claimed": false
+          }
+        ]
+      },
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}",
+          "msg": "GET /items/Calculator should answer the four fields from the database: {\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"cache\"}",
+          "msg": "the next GET /items/Calculator should answer the same four fields from the cache, with \"source\":\"cache\""
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "item:Calculator",
+          "ttlMin": 30,
+          "ttlMax": 60,
+          "msg": "started plainly, with no CACHE_SECONDS, the note should be kept for 60 seconds: Number(process.env.CACHE_SECONDS) || 60"
+        }
+      ]
+    }
+  ]
+}

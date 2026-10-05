@@ -1,0 +1,12 @@
+[
+  {"name": "Calculator", "category": "Electronics", "foundAt": "Library", "daysHeld": 12, "claimed": false},
+  {"name": "Earphones", "category": "Electronics", "foundAt": "Auditorium", "daysHeld": 3, "claimed": false},
+  {"name": "Power bank", "category": "Electronics", "foundAt": "Bus stop", "daysHeld": 9, "claimed": false},
+  {"name": "ID card holder", "category": "Cards", "foundAt": "Main gate", "daysHeld": 1, "claimed": true},
+  {"name": "Water bottle", "category": "Bottles", "foundAt": "Ground", "daysHeld": 15, "claimed": false},
+  {"name": "Umbrella", "category": "Other", "foundAt": "Block C", "daysHeld": 20, "claimed": false},
+  {"name": "Notebook", "category": "Books", "foundAt": "Seminar hall", "daysHeld": 2, "claimed": true},
+  {"name": "Hoodie", "category": "Clothing", "foundAt": "Hostel mess", "daysHeld": 6, "claimed": false},
+  {"name": "DBMS textbook", "category": "Books", "foundAt": "Library", "daysHeld": 5, "claimed": false},
+  {"name": "Steel bottle", "category": "Bottles", "foundAt": "Lab 3", "daysHeld": 0, "claimed": false}
+]

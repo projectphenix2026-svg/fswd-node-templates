@@ -1,0 +1,185 @@
+{
+  "title": "Exercise 2 \u00b7 Step D \u00b7 never stale",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "lab-10/server.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": [
+          {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": false
+          },
+          {
+            "name": "Earphones",
+            "category": "Electronics",
+            "foundAt": "Auditorium",
+            "daysHeld": 3,
+            "claimed": false
+          },
+          {
+            "name": "Power bank",
+            "category": "Electronics",
+            "foundAt": "Bus stop",
+            "daysHeld": 9,
+            "claimed": false
+          },
+          {
+            "name": "ID card holder",
+            "category": "Cards",
+            "foundAt": "Main gate",
+            "daysHeld": 1,
+            "claimed": true
+          },
+          {
+            "name": "Water bottle",
+            "category": "Bottles",
+            "foundAt": "Ground",
+            "daysHeld": 15,
+            "claimed": false
+          },
+          {
+            "name": "Umbrella",
+            "category": "Other",
+            "foundAt": "Block C",
+            "daysHeld": 20,
+            "claimed": false
+          },
+          {
+            "name": "Notebook",
+            "category": "Books",
+            "foundAt": "Seminar hall",
+            "daysHeld": 2,
+            "claimed": true
+          },
+          {
+            "name": "Hoodie",
+            "category": "Clothing",
+            "foundAt": "Hostel mess",
+            "daysHeld": 6,
+            "claimed": false
+          },
+          {
+            "name": "DBMS textbook",
+            "category": "Books",
+            "foundAt": "Library",
+            "daysHeld": 5,
+            "claimed": false
+          },
+          {
+            "name": "Steel bottle",
+            "category": "Bottles",
+            "foundAt": "Lab 3",
+            "daysHeld": 0,
+            "claimed": false
+          }
+        ]
+      },
+      "cache": {},
+      "ready": "/__ready",
+      "requests": [
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}",
+          "msg": "GET /items/Calculator should answer the four fields from the database: {\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"database\"}"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"cache\"}",
+          "msg": "the next GET /items/Calculator should answer the same four fields from the cache, with \"source\":\"cache\""
+        },
+        {
+          "method": "POST",
+          "path": "/items/Calculator/claim",
+          "send": {},
+          "status": 400,
+          "equals": "{\"error\":\"Say who is claiming it\"}",
+          "msg": "a claim with no claimedBy should be refused: status 400 and {\"error\":\"Say who is claiming it\"}"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":false,\"source\":\"cache\"}",
+          "msg": "the next GET /items/Calculator should answer the same four fields from the cache, with \"source\":\"cache\""
+        },
+        {
+          "method": "POST",
+          "path": "/items/Calculator/claim",
+          "send": {
+            "claimedBy": "CSE 3rd year"
+          },
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"claimed\":true}",
+          "msg": "a claim with claimedBy should answer 200 and {\"name\":\"Calculator\",\"claimed\":true}"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":true,\"source\":\"database\"}",
+          "msg": "after the claim the next GET must say claimed true, from the database: remove the note with cache.del(\"item:\" + req.params.name)"
+        },
+        {
+          "path": "/items/Calculator",
+          "status": 200,
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\",\"claimed\":true,\"source\":\"cache\"}",
+          "msg": "and the GET after that should say claimed true from the cache"
+        }
+      ],
+      "source": [
+        {
+          "has": "\\$set",
+          "msg": "server.js does not name the fields to change with $set"
+        },
+        {
+          "has": "cache\\.del\\s*\\(",
+          "msg": "server.js does not remove the note: await cache.del(\"item:\" + req.params.name);"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bitems\\.(insertOne|insertMany|findOne|updateOne|countDocuments|drop)\\(",
+          "msg": "a call to the database is not waited for: write await in front of it"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "after": [
+        {
+          "coll": "items",
+          "filter": {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": true,
+            "claimedBy": "CSE 3rd year"
+          },
+          "count": 1,
+          "msg": "in the database the Calculator should be claimed, by \"CSE 3rd year\", and keep its other fields: { $set: { claimed: true, claimedBy: req.body.claimedBy } }"
+        },
+        {
+          "coll": "items",
+          "filter": {
+            "claimed": true
+          },
+          "count": 3,
+          "msg": "only the Calculator should change: the refused claim must change nothing (return after the 400)"
+        }
+      ]
+    }
+  ],
+  "handIn": {
+    "lab": "fswd-lab-10",
+    "id": "LAB10-E2D",
+    "files": {
+      "server.js": "lab-10/server.js"
+    }
+  }
+}

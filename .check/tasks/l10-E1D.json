@@ -1,0 +1,54 @@
+{
+  "title": "Exercise 1 \u00b7 Step D \u00b7 when the database cannot be reached",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "env": {
+        "DB_ADDRESS": "mongodb://localhost:1"
+      },
+      "wait": 30000,
+      "includes": [
+        "Could not reach the lost and found:"
+      ],
+      "excludes": [
+        "Loaded"
+      ],
+      "source": [
+        {
+          "has": "try\\s*\\{[\\s\\S]*catch\\s*\\(",
+          "msg": "register.js has no try and catch round its work with the database"
+        }
+      ],
+      "msg": "started with an address where no database listens, the program should print Could not reach the lost and found: and the error's message, and then end"
+    },
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "includes": [
+        "Loaded 10 items",
+        "Held more than 7 days: Calculator, Power bank, Water bottle, Umbrella",
+        "Electronics: Calculator, Earphones, Power bank",
+        "Claimed: ID card holder, Notebook"
+      ],
+      "msg": "with the database there, the program should still print Loaded 10 items and the three answers"
+    }
+  ],
+  "handIn": {
+    "lab": "fswd-lab-10",
+    "id": "LAB10-E1D",
+    "files": {
+      "register.js": "lab-10/register.js"
+    }
+  }
+}

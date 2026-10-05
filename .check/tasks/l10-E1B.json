@@ -1,0 +1,77 @@
+{
+  "title": "Exercise 1 \u00b7 Step B \u00b7 a new item handed in",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "args": [
+        "Spectacles",
+        "Other",
+        "Auditorium"
+      ],
+      "includes": [
+        "Loaded 10 items",
+        "Added Spectacles"
+      ],
+      "source": [
+        {
+          "has": "process\\.argv\\[2\\]",
+          "msg": "register.js does not read the name given after the file name: process.argv[2]"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bitems\\.(insertOne|insertMany|findOne|updateOne|countDocuments|drop)\\(",
+          "msg": "a call to the database is not waited for: write await in front of it"
+        }
+      ],
+      "after": [
+        {
+          "coll": "items",
+          "filter": {
+            "name": "Spectacles",
+            "category": "Other",
+            "foundAt": "Auditorium",
+            "daysHeld": 0,
+            "claimed": false
+          },
+          "count": 1,
+          "msg": "the new item should be stored with five fields: name, category and foundAt from the command line, daysHeld 0 (a number) and claimed false (no quotes)"
+        },
+        {
+          "coll": "items",
+          "filter": {},
+          "count": 11,
+          "msg": "there should be eleven items: the ten of the register and the new one"
+        }
+      ]
+    },
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": []
+      },
+      "includes": [
+        "Loaded 10 items"
+      ],
+      "excludes": [
+        "Added"
+      ],
+      "after": [
+        {
+          "coll": "items",
+          "filter": {},
+          "count": 10,
+          "msg": "run with no name after the file name, the program should add nothing: put the insert inside if (name) { \u2026 }"
+        }
+      ],
+      "msg": "run with no name after the file name, the program should print Loaded 10 items and not print Added"
+    }
+  ]
+}

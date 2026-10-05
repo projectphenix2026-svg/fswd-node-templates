@@ -1,4 +1,4 @@
-// .check/run.js - checks one task of a class.   npm run check c6-T1 K7QF
+// .check/run.js - checks one task of a class or one step of a lab.   npm run check c6-T1 K7QF
 // The first word names the task; the second is the key shown on the task's card on the class page.
 // It holds no answer. It gives your work a database of its own (never the one you practise in), runs your file the
 // way you would, and compares what came back, or what the database then holds, with what the task asks for.
@@ -20,7 +20,8 @@ const NO_CACHE = 'Valkey does not answer. Run  npm run setup  once, then try aga
 
 const URL = (process.env.MONGO_URL || 'mongodb://localhost:27017').replace(/\/+$/, '');
 const ROOT = path.join(__dirname, '..');
-const [id, key] = process.argv.slice(2);
+const [id, key, roll, token] = process.argv.slice(2);
+const SITE = (process.env.LMS_SITE || 'https://rishi-fswd-java.pages.dev').replace(/\/+$/, '');
 
 function stop(line)
 {
@@ -29,7 +30,7 @@ function stop(line)
 }
 
 if (!id) stop('Name the task and the key from its card, for example:  npm run check c6-T1 K7QF');
-if (!/^[a-z]\d+-[A-Z]\d+$/.test(id)) stop('"' + id + '" is not a task name. A task is named like c6-T1: copy the command from the card.');
+if (!/^[a-z]\d+-[A-Z]\w*$/.test(id)) stop('"' + id + '" is not a task name. A task is named like c6-T1: copy the command from the card.');
 const specFile = path.join(__dirname, 'tasks', id + '.json');
 if (!fs.existsSync(specFile)) stop('There is no task named ' + id + ' here. Copy the command from the task\'s card.');
 if (!key) stop('The key is missing. Copy the whole command from the task\'s card: it ends with a short key.');
@@ -227,7 +228,7 @@ async function run(client, part)
   if (!(await cacheSeed(part))) return;
   // the program names its database itself, as the examination asks: client.db("helpdesk"). The preload gives every
   // database name the check's own prefix, so the check never touches the database the student practises in.
-  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db || '', CHECK_DB_PREFIX: part.prefix || '', CHECK_CACHE_DB: part.cache ? String(CACHE_DB) : '' });
+  const env = Object.assign({}, process.env, { MONGO_URL: URL, MONGO_DB: part.db || '', CHECK_DB_PREFIX: part.prefix || '', CHECK_CACHE_DB: part.cache ? String(CACHE_DB) : '' }, part.env || {});
   const cmd = 'node ' + [part.file].concat(part.args || []).join(' ');
   const pre = part.prefix || part.cache ? ['-r', path.join(__dirname, 'preload.js')] : [];
   const out = spawnSync('node', pre.concat([part.file]).concat(part.args || []), { cwd: ROOT, encoding: 'utf8', timeout: part.wait || 20000, env: env });
@@ -313,6 +314,8 @@ async function serve(client, part)
     const before = wrong;
     for (const r of part.requests || [])
     {
+      // a pause between two requests: time for a key in the cache to expire
+      if (r.wait) { await wait(r.wait); continue; }
       const got = await ask(port, r);
       const what = (r.method || 'GET') + ' ' + r.path + (r.form ? ' with ' + Object.keys(r.form).map(k => k + '=' + (r.form[k] === '' ? '(empty)' : r.form[k])).join(', ') : '');
       const body = tidy(got.text);
@@ -339,6 +342,31 @@ async function serve(client, part)
   finally
   {
     child.kill();
+  }
+}
+
+// The finished program of a lab's exercise, sent to the lab page so that the record prints it as it was typed.
+// The roll number and the key after it are on the step's card; without them the program is checked and not sent.
+async function handIn(h)
+{
+  if (!roll || !token)
+  {
+    console.log('\nThis step is also handed in for your lab record. Copy the whole command from its card: it ends with your roll number and a long key.');
+    return;
+  }
+  const files = {};
+  Object.keys(h.files).forEach(name => { files[name] = fs.readFileSync(path.join(ROOT, h.files[name]), 'utf8'); });
+  try
+  {
+    const res = await fetch(SITE + '/api/project', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'submit', labId: h.lab, roll: roll, token: token, files: files, results: [{ id: h.id, ok: true, line: 'passed' }] }) });
+    const j = await res.json();
+    console.log(j && j.ok ? '\nHanded in for your lab record: ' + Object.keys(files).join(', ')
+      : '\nNot handed in: the roll number or the key after it does not fit. Copy the whole command from the card again.');
+  }
+  catch (e)
+  {
+    console.log('\nNot handed in: the lab page could not be reached. Your result code still counts; run the same command again in a minute.');
   }
 }
 
@@ -371,4 +399,6 @@ async function serve(client, part)
   if (wrong) { console.log('\nFix what is named above, then run the same command again.'); process.exit(1); }
   console.log('\nPASSED. Result code: ' + code(key.toUpperCase(), id));
   console.log('Type this code into the task on the class page.');
+  // the last step of a lab's exercise: the finished program goes to the lab page, for the record
+  if (spec.handIn) await handIn(spec.handIn);
 })();

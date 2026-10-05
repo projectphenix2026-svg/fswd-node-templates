@@ -1,0 +1,118 @@
+{
+  "title": "Drill 3 \u00b7 change one field",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/d3.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": [
+          {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": false
+          },
+          {
+            "name": "Earphones",
+            "category": "Electronics",
+            "foundAt": "Auditorium",
+            "daysHeld": 3,
+            "claimed": false
+          },
+          {
+            "name": "Power bank",
+            "category": "Electronics",
+            "foundAt": "Bus stop",
+            "daysHeld": 9,
+            "claimed": false
+          },
+          {
+            "name": "ID card holder",
+            "category": "Cards",
+            "foundAt": "Main gate",
+            "daysHeld": 1,
+            "claimed": true
+          },
+          {
+            "name": "Water bottle",
+            "category": "Bottles",
+            "foundAt": "Ground",
+            "daysHeld": 15,
+            "claimed": false
+          },
+          {
+            "name": "Umbrella",
+            "category": "Other",
+            "foundAt": "Block C",
+            "daysHeld": 20,
+            "claimed": false
+          },
+          {
+            "name": "Notebook",
+            "category": "Books",
+            "foundAt": "Seminar hall",
+            "daysHeld": 2,
+            "claimed": true
+          },
+          {
+            "name": "Hoodie",
+            "category": "Clothing",
+            "foundAt": "Hostel mess",
+            "daysHeld": 6,
+            "claimed": false
+          },
+          {
+            "name": "DBMS textbook",
+            "category": "Books",
+            "foundAt": "Library",
+            "daysHeld": 5,
+            "claimed": false
+          },
+          {
+            "name": "Steel bottle",
+            "category": "Bottles",
+            "foundAt": "Lab 3",
+            "daysHeld": 0,
+            "claimed": false
+          }
+        ]
+      },
+      "expected": "Earphones, found at Auditorium, claimed: true",
+      "source": [
+        {
+          "has": "\\$set",
+          "msg": "d3.js does not name the field to change with $set: { $set: { claimed: true } }"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bitems\\.(insertOne|insertMany|findOne|updateOne|countDocuments|drop)\\(",
+          "msg": "a call to the database is not waited for: write await in front of it"
+        }
+      ],
+      "after": [
+        {
+          "coll": "items",
+          "filter": {
+            "name": "Earphones",
+            "category": "Electronics",
+            "foundAt": "Auditorium",
+            "daysHeld": 3,
+            "claimed": true
+          },
+          "count": 1,
+          "msg": "the Earphones should be claimed and keep their other four fields: updateOne({ name: \"Earphones\" }, { $set: { claimed: true } })"
+        },
+        {
+          "coll": "items",
+          "filter": {
+            "claimed": true
+          },
+          "count": 3,
+          "msg": "only the Earphones should change: three items are claimed after the update"
+        }
+      ]
+    }
+  ]
+}

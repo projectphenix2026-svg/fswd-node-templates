@@ -1,0 +1,38 @@
+{
+  "title": "Drill 4 \u00b7 a note with an expiry",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/d4.js",
+      "cache": {},
+      "expected": "Calculator, found at Library",
+      "source": [
+        {
+          "has": "JSON\\.stringify\\s*\\(",
+          "msg": "d4.js does not turn the object into text before keeping it: JSON.stringify(item)"
+        },
+        {
+          "has": "JSON\\.parse\\s*\\(",
+          "msg": "d4.js does not turn the kept text back into an object: JSON.parse(kept)"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bcache\\.(get|set|del)\\(",
+          "msg": "a call to the cache is not waited for: write await in front of it"
+        }
+      ],
+      "cacheAfter": [
+        {
+          "key": "item:Calculator",
+          "equals": "{\"name\":\"Calculator\",\"foundAt\":\"Library\"}",
+          "msg": "the key item:Calculator should hold the item as JSON text: {\"name\":\"Calculator\",\"foundAt\":\"Library\"}"
+        },
+        {
+          "key": "item:Calculator",
+          "ttlMin": 1,
+          "ttlMax": 60,
+          "msg": "the key item:Calculator should expire after 60 seconds: cache.set(key, text, \"EX\", 60)"
+        }
+      ]
+    }
+  ]
+}

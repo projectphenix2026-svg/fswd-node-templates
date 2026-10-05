@@ -1,0 +1,53 @@
+{
+  "title": "Exercise 1 \u00b7 Step A \u00b7 load the register",
+  "parts": [
+    {
+      "kind": "run",
+      "file": "lab-10/register.js",
+      "prefix": "chk_l10_",
+      "db": "chk_l10_lostfound",
+      "seed": {
+        "items": [
+          {
+            "name": "Calculator",
+            "category": "Electronics",
+            "foundAt": "Library",
+            "daysHeld": 12,
+            "claimed": false
+          }
+        ]
+      },
+      "includes": [
+        "Loaded 10 items"
+      ],
+      "source": [
+        {
+          "has": "insertMany\\s*\\(",
+          "msg": "register.js does not load the ten items with items.insertMany(given)"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\bitems\\.(insertOne|insertMany|findOne|updateOne|countDocuments|drop)\\(",
+          "msg": "a call to the database is not waited for: write await in front of it"
+        }
+      ],
+      "after": [
+        {
+          "coll": "items",
+          "filter": {},
+          "count": 10,
+          "msg": "after one run the collection should hold exactly ten items: empty it first with items.drop(), then insertMany(given)"
+        },
+        {
+          "coll": "items",
+          "filter": {
+            "name": "Umbrella",
+            "foundAt": "Block C",
+            "daysHeld": 20
+          },
+          "count": 1,
+          "msg": "the Umbrella of the given register is not in the collection as given"
+        }
+      ]
+    }
+  ]
+}

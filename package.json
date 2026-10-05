@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "node hello.js",
     "setup": "bash .devcontainer/setup.sh",
+    "lab10": "node .check/lab10-fill.js",
     "check": "node .check/run.js"
   },
   "dependencies": {
