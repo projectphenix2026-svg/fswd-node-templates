@@ -1,0 +1,70 @@
+{
+  "title": "One product, by the id MongoDB made",
+  "parts": [
+    {
+      "kind": "serve",
+      "file": "u5-class-03/t2.js",
+      "prefix": "chk_r3t2_",
+      "db": "chk_r3t2_store",
+      "seed": {
+        "products": [
+          {
+            "_id": {
+              "$oid": "6ac931504a64885a883b6c1b"
+            },
+            "name": "Notebook",
+            "price": 40
+          },
+          {
+            "_id": {
+              "$oid": "6ac931504a64885a883b6c1c"
+            },
+            "name": "Pen",
+            "price": 10
+          }
+        ]
+      },
+      "ready": "/index.html",
+      "requests": [
+        {
+          "path": "/api/products/6ac931504a64885a883b6c1c",
+          "status": 200,
+          "equals": "{\"_id\":\"6ac931504a64885a883b6c1c\",\"name\":\"Pen\",\"price\":10}",
+          "msg": "GET /api/products/6ac931504a64885a883b6c1c must reply 200 with the Pen: the first if must be true only when the text cannot be an id (a ! in front of ObjectId.isValid), and the filter of findOne is { _id: new ObjectId(req.params.id) }"
+        },
+        {
+          "path": "/api/products/6ac931504a64885a883b6c1b",
+          "status": 200,
+          "equals": "{\"_id\":\"6ac931504a64885a883b6c1b\",\"name\":\"Notebook\",\"price\":40}",
+          "msg": "GET /api/products/6ac931504a64885a883b6c1b must reply 200 with the Notebook: the id must be the one in the address, req.params.id"
+        },
+        {
+          "path": "/api/products/6ac931504a64885a883b6c10",
+          "status": 404,
+          "equals": "{\"error\":\"No such product\"}",
+          "msg": "an id that is well formed but belongs to no product must be answered 404 with { error: \"No such product\" }"
+        },
+        {
+          "path": "/api/products/2",
+          "status": 400,
+          "equals": "{\"error\":\"Not an id\"}",
+          "msg": "GET /api/products/2 must be answered 400 with { error: \"Not an id\" }: 2 cannot be an id, so the test of the first if is !ObjectId.isValid(req.params.id)"
+        }
+      ],
+      "source": [
+        {
+          "has": "new\\s+ObjectId\\s*\\(",
+          "msg": "t2.js compares the _id with text: make the text of the address into an id with new ObjectId(req.params.id)"
+        },
+        {
+          "has": "ObjectId\\.isValid\\s*\\(",
+          "msg": "t2.js does not test the id yet: ObjectId.isValid(req.params.id) says whether the text can be an id"
+        },
+        {
+          "lacks": "(?:^|\\n)(?![^\\n]*await)[^\\n]*\\.(insertOne|findOne|deleteOne|toArray)\\(",
+          "msg": "a database call is not waited for: write await in front of it, or the next line runs before the answer has come"
+        }
+      ]
+    }
+  ]
+}

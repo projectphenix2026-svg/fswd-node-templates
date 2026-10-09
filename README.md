@@ -32,7 +32,7 @@ npm run setup
 
 ## In a class
 
-Each class has a folder (`class-06`, …) with one file for each task. The task's card on the class page names the
+Each class has a folder (`class-06`, …; `u5-class-03` is Unit 5 Class 3) with one file for each task. The task's card on the class page names the
 file and gives the command that checks it, for example:
 
 ```

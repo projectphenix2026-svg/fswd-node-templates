@@ -1,0 +1,102 @@
+{
+  "title": "The page adds a product",
+  "parts": [
+    {
+      "kind": "page",
+      "file": "u5-class-03/public/page.js",
+      "server": "u5-class-03/service.js",
+      "prefix": "chk_r3t3_",
+      "db": "chk_r3t3_store",
+      "seed": {
+        "products": [
+          {
+            "_id": {
+              "$oid": "6ac931504a64885a883b6c1b"
+            },
+            "name": "Notebook",
+            "price": 40
+          }
+        ]
+      },
+      "ready": "/index.html",
+      "source": [
+        {
+          "has": "method\\s*:",
+          "msg": "page.js does not say which kind of request to send: the first option is method"
+        },
+        {
+          "has": "headers\\s*:",
+          "msg": "page.js does not label the body yet: the second option is headers, with \"Content-Type\": \"application/json\" inside it"
+        },
+        {
+          "has": "body\\s*:",
+          "msg": "page.js sends no body yet: the third option is body, the product turned into JSON text"
+        }
+      ],
+      "calls": [
+        {
+          "fn": "addProduct",
+          "args": [
+            {
+              "name": "Marker",
+              "price": 25
+            }
+          ],
+          "method": "POST",
+          "path": "/api/products",
+          "type": "application/json",
+          "body": {
+            "name": "Marker",
+            "price": 25
+          },
+          "status": 201,
+          "returns": 201
+        },
+        {
+          "fn": "addProduct",
+          "args": [
+            {
+              "name": "Ruler",
+              "price": 15
+            }
+          ],
+          "method": "POST",
+          "path": "/api/products",
+          "type": "application/json",
+          "body": {
+            "name": "Ruler",
+            "price": 15
+          },
+          "status": 201,
+          "returns": 201
+        }
+      ],
+      "after": [
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Marker",
+            "price": 25
+          },
+          "count": 1,
+          "msg": "the Marker did not reach the collection with its name and its price"
+        },
+        {
+          "coll": "products",
+          "filter": {
+            "name": "Ruler",
+            "price": 15
+          },
+          "count": 1,
+          "msg": "the Ruler did not reach the collection: the body must be made from the product that addProduct is given"
+        },
+        {
+          "coll": "products",
+          "filter": {},
+          "count": 3,
+          "msg": "the collection should hold three products: the Notebook that was there, the Marker and the Ruler"
+        }
+      ]
+    }
+  ]
+}

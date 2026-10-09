@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Campus store</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 460px; margin: 32px auto; padding: 0 16px; }
+  li { padding: 6px 0; }
+  input, button { font: inherit; padding: 8px 10px; box-sizing: border-box; }
+  input { width: 100%; margin: 6px 0; }
+  button { margin-top: 8px; background: darkgreen; color: white; border: 0; border-radius: 8px; }
+  #note { color: firebrick; min-height: 24px; }
+</style>
+</head>
+<body>
+<h1>Campus store</h1>
+<ul id="list"></ul>
+
+<h2>Add a product</h2>
+<form id="add">
+  <input id="name" placeholder="name, for example Marker">
+  <input id="price" type="number" placeholder="price in rupees, for example 25">
+  <button type="submit">Add</button>
+</form>
+<p id="note"></p>
+
+<script src="page.js"></script>
+<script>
+// This part is given: it draws what page.js brings, and sends what the form holds.
+const list = document.getElementById("list");
+const note = document.getElementById("note");
+
+async function show()
+{
+  const products = await getProducts();
+  list.innerHTML = "";
+  products.forEach((p) =>
+  {
+    const li = document.createElement("li");
+    li.textContent = p.name + " · Rs " + p.price;
+    list.appendChild(li);
+  });
+}
+
+document.getElementById("add").addEventListener("submit", async (event) =>
+{
+  event.preventDefault();
+  const product = {
+    name: document.getElementById("name").value,
+    price: Number(document.getElementById("price").value)
+  };
+  const status = await addProduct(product);
+  note.textContent = status === 201 ? "" : "Not added: the service replied " + status;
+  show();
+});
+
+show();
+</script>
+</body>
+</html>

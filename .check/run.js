@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { spawn, spawnSync } = require('child_process');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 // Valkey, for the tasks that use the cache (Class 9 on). A program is checked on database number 15 of the Valkey
 // server, which the check empties first; your own keys, in database 0, are never touched.
@@ -129,12 +129,21 @@ function why(r)
   return line ? line.slice(0, 160) : 'it did not finish';
 }
 
+// a seeded document: as the task's file gives it. One that must be found by its id (Unit 5 Class 3) names the id as
+// "_id": { "$oid": "<24 hex characters>" }, and it is stored as the ObjectId it stands for.
+function seeded(d)
+{
+  const doc = Object.assign({}, d);
+  if (doc._id && typeof doc._id === 'object' && typeof doc._id.$oid === 'string') doc._id = new ObjectId(doc._id.$oid);
+  return doc;
+}
+
 async function seed(client, db, collections)
 {
   await client.db(db).dropDatabase();
   for (const name of Object.keys(collections || {}))
   {
-    if (collections[name].length) await client.db(db).collection(name).insertMany(collections[name].map(d => Object.assign({}, d)));
+    if (collections[name].length) await client.db(db).collection(name).insertMany(collections[name].map(seeded));
     else await client.db(db).createCollection(name);
   }
 }
@@ -345,6 +354,90 @@ async function serve(client, part)
   }
 }
 
+// A page's own script (Unit 5 Class 3): the functions of a page that talk to its service with fetch.
+// The service (part.server) is started as in "serve", on the check's own door number and database. The script
+// (part.file) is loaded the way a browser loads it, and each function named in part.calls is called. Its fetch is
+// the real one: only the address of the check's server is put in front of a path such as /api/products, as a
+// browser does for a page that came from that server. What the function sent (the verb, the address, the label
+// and the body), the status the service gave and what the function handed back are compared, then the database.
+async function page(client, part)
+{
+  const vm = require('vm');
+  const text = read(part.file);
+  if (text == null) return;
+  if (!sourceChecks(text, part.source)) return;
+  if (!fs.existsSync(path.join(ROOT, part.server))) { say('the file ' + part.server + ' is missing: run  git pull  and then  npm run setup'); return; }
+  if (part.seed) await seed(client, part.db, part.seed);
+  const port = 3900 + Math.floor(Math.random() * 90);
+  const env = Object.assign({}, process.env, { MONGO_URL: URL, CHECK_DB_PREFIX: part.prefix || '', CHECK_PORT: String(port) }, part.env || {});
+  const child = spawn('node', ['-r', path.join(__dirname, 'preload.js'), part.server], { cwd: ROOT, env: env });
+  let ended = false;
+  child.stderr.on('data', () => {});
+  child.stdout.on('data', () => {});
+  child.on('exit', () => { ended = true; });
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  let up = false;
+  for (let i = 0; i < 60 && !ended && !up; i++)
+  {
+    await wait(250);
+    const r = await ask(port, { path: part.ready || '/' });
+    up = !r.none;
+  }
+  try
+  {
+    if (!up) { say('node ' + part.server + ' did not start listening, so the page has no service to ask. Run it yourself and read what it prints'); return; }
+    const name = path.basename(part.file);
+    const sent = [];
+    const box = {
+      console: { log: () => {}, error: () => {} },
+      fetch: (address, options) =>
+      {
+        const o = options || {};
+        const labels = {};
+        Object.keys(o.headers || {}).forEach(k => { labels[k.toLowerCase()] = String(o.headers[k]); });
+        const one = { method: String(o.method || 'GET').toUpperCase(), path: String(address), type: labels['content-type'] || '', body: o.body, status: 0 };
+        sent.push(one);
+        return fetch(new globalThis.URL(String(address), 'http://127.0.0.1:' + port), o).then(reply => { one.status = reply.status; return reply; });
+      }
+    };
+    try { vm.runInNewContext(fs.readFileSync(path.join(ROOT, part.file), 'utf8'), box, { filename: name }); }
+    catch (e) { say(name + ' cannot be read as a script: ' + String(e && e.message || e).split('\n')[0]); return; }
+    const before = wrong;
+    for (const c of part.calls || [])
+    {
+      const what = c.fn + '(' + (c.args || []).map(a => JSON.stringify(a)).join(', ') + ')';
+      if (typeof box[c.fn] !== 'function') { say(name + ' has no function named ' + c.fn + ' any more: the page calls it by that name'); break; }
+      sent.length = 0;
+      let gave;
+      let failed = null;
+      try { gave = await Promise.race([Promise.resolve(box[c.fn].apply(null, JSON.parse(JSON.stringify(c.args || [])))), wait(10000).then(() => { throw new Error('it did not finish in 10 seconds'); })]); }
+      catch (e) { failed = String(e && e.message || e).split('\n')[0]; }
+      const one = sent[0];
+      if (!one) { say(what + (failed ? ' stopped before it sent anything: ' + failed : ' sent no request: it must call fetch')); break; }
+      if (c.method && one.method !== c.method) { say(what + ' sent a ' + one.method + ' request, and a ' + c.method + ' is wanted: the option  method: "' + c.method + '"  says so'); break; }
+      if (c.path && one.path !== c.path) { say(what + ' asked the address ' + one.path + ', and ' + c.path + ' is wanted'); break; }
+      if (c.body !== undefined)
+      {
+        if (one.body == null) { say(what + ' sent a ' + one.method + ' with nothing in its body: the option  body  carries the data'); break; }
+        if (typeof one.body !== 'string') { say(what + ' gave fetch an object as the body, which travels as the text [object Object]: turn it into JSON text with JSON.stringify( )'); break; }
+        let got;
+        try { got = JSON.parse(one.body); } catch (e) { say(what + ' sent a body that is not JSON text: ' + JSON.stringify(one.body.slice(0, 60))); break; }
+        if (JSON.stringify(got) !== JSON.stringify(c.body)) { say(what + ' sent the body ' + one.body.slice(0, 90) + ' and ' + JSON.stringify(c.body) + ' is wanted: the body is made from what the function was given'); break; }
+      }
+      if (c.type && one.type.split(';')[0].trim().toLowerCase() !== c.type) { say(what + ' sent its body with ' + (one.type ? 'the label ' + one.type : 'no label') + ': the option  headers: { "Content-Type": "' + c.type + '" }  tells the service how to read the body'); break; }
+      if (failed) { say(what + ' stopped with an error: ' + failed); break; }
+      if (c.status != null && one.status !== c.status) { say(what + ' was answered ' + one.status + ' by the service, and ' + c.status + ' is wanted'); break; }
+      if (c.returns !== undefined && JSON.stringify(gave) !== JSON.stringify(c.returns)) { say(what + ' handed back ' + JSON.stringify(gave) + ', and ' + JSON.stringify(c.returns) + ' is wanted: leave the last lines of the function as they were given'); break; }
+      ok(what + ' sent ' + one.method + ' ' + one.path + ' and was answered ' + one.status);
+    }
+    if (wrong === before) await after(client, part.db, part.after);
+  }
+  finally
+  {
+    child.kill();
+  }
+}
+
 // The finished program of a lab's exercise, sent to the lab page so that the record prints it as it was typed.
 // The roll number and the key after it are on the step's card; without them the program is checked and not sent.
 async function handIn(h)
@@ -383,6 +476,7 @@ async function handIn(h)
       else if (part.kind === 'apply') await apply(client, part);
       else if (part.kind === 'run') await run(client, part);
       else if (part.kind === 'serve') await serve(client, part);
+      else if (part.kind === 'page') await page(client, part);
       else if (part.kind === 'cache')
       {
         // a key typed in valkey-cli: only read, in the database you typed it in
